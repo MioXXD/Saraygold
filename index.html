@@ -1715,46 +1715,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   animate();
 })();
 
-/* ── WHITE BACKGROUND REMOVAL via Canvas ── */
-(function removeWhiteBg() {
-  const src = 'Logo.png.png';
-  const tmp = new Image();
-  tmp.crossOrigin = 'anonymous';
-  tmp.onload = function() {
-    const canvas = document.createElement('canvas');
-    canvas.width  = tmp.naturalWidth;
-    canvas.height = tmp.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(tmp, 0, 0);
-
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = imgData.data;
-    const THRESHOLD  = 220; // pixels brighter than this → transparent
-    const SOFT_RANGE = 40;  // smooth anti-alias transition
-
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i+1], b = d[i+2];
-      // Perceived luminance
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      if (lum >= THRESHOLD) {
-        d[i+3] = 0; // fully transparent
-      } else if (lum >= THRESHOLD - SOFT_RANGE) {
-        // smooth edge
-        d[i+3] = Math.round(255 * (1 - (lum - (THRESHOLD - SOFT_RANGE)) / SOFT_RANGE));
-      }
-      // else: keep original alpha (opaque gold stays fully visible)
-    }
-    ctx.putImageData(imgData, 0, 0);
-    const dataURL = canvas.toDataURL('image/png');
-
-    // Replace every logo <img> src with the transparent version
-    document.querySelectorAll('img[src="Logo.png.png"]').forEach(el => {
-      el.src = dataURL;
-    });
-  };
-  tmp.onerror = () => console.warn('Logo not loaded for white-removal');
-  tmp.src = src;
-})();
 </script>
 </body>
 </html>
